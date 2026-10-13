@@ -13,7 +13,7 @@ class BrandMark extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final logoSize = compact ? 42.0 : 48.0;
+    final logoSize = compact ? 34.0 : 48.0;
 
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
@@ -24,12 +24,12 @@ class BrandMark extends StatelessWidget {
           alignment: Alignment.center,
           decoration: BoxDecoration(
             gradient: AppColors.logoGradient,
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(compact ? 10 : 14),
             boxShadow: [
               BoxShadow(
-                color: AppColors.magenta.withValues(alpha: 0.28),
-                blurRadius: 16,
-                offset: const Offset(0, 8),
+                color: AppColors.magenta.withValues(alpha: compact ? 0.18 : 0.28),
+                blurRadius: compact ? 10 : 16,
+                offset: Offset(0, compact ? 4 : 8),
               ),
             ],
           ),
@@ -38,12 +38,12 @@ class BrandMark extends StatelessWidget {
             style: GoogleFonts.plusJakartaSans(
               color: Colors.white,
               fontWeight: FontWeight.w800,
-              fontSize: compact ? 22 : 24,
+              fontSize: compact ? 17 : 24,
               height: 1,
             ),
           ),
         ),
-        const SizedBox(width: 12),
+        SizedBox(width: compact ? 9 : 12),
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -52,18 +52,18 @@ class BrandMark extends StatelessWidget {
               style: GoogleFonts.plusJakartaSans(
                 color: AppColors.navy,
                 fontWeight: FontWeight.w800,
-                fontSize: compact ? 24 : 28,
+                fontSize: compact ? 17 : 28,
                 height: 1.05,
               ),
             ),
-            const SizedBox(height: 2),
+            SizedBox(height: compact ? 1 : 2),
             Text(
               'ASSOCIATION',
               style: GoogleFonts.plusJakartaSans(
                 color: AppColors.textMuted,
-                fontWeight: FontWeight.w700,
-                fontSize: 11,
-                letterSpacing: 2.8,
+                fontWeight: FontWeight.w600,
+                fontSize: compact ? 9 : 11,
+                letterSpacing: compact ? 1.8 : 2.8,
               ),
             ),
           ],

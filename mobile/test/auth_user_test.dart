@@ -16,5 +16,19 @@ void main() {
     expect(user.memberId, 'BYN-2026-0007');
     expect(user.role, 'member');
     expect(user.isActive, isTrue);
+    expect(user.isMember, isTrue);
+    expect(user.isStaff, isFalse);
+  });
+
+  test('AuthUser recognizes staff roles', () {
+    final admin = AuthUser.fromJson({
+      'id': 1,
+      'name': 'Admin',
+      'email': 'admin@example.com',
+      'role': 'admin',
+      'is_active': true,
+    });
+    expect(admin.isStaff, isTrue);
+    expect(admin.isMember, isFalse);
   });
 }

@@ -31,21 +31,22 @@ class MobilePreviewFrame extends StatelessWidget {
     }
 
     return ColoredBox(
-      color: const Color(0xFF2A2F2C),
+      color: const Color(0xFF1A2030),
       child: LayoutBuilder(
         builder: (context, constraints) {
           return Column(
             children: [
-              const SizedBox(height: 12),
+              const SizedBox(height: 16),
               Text(
-                'Mobile preview · ${phoneSize.width.toInt()}×${phoneSize.height.toInt()}',
-                style: const TextStyle(
-                  color: Color(0xFFB8C2BB),
+                'Bynnas Association',
+                style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.72),
                   fontSize: 12,
-                  letterSpacing: 0.4,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 0.6,
                 ),
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 12),
               Expanded(
                 child: Center(
                   child: FittedBox(
@@ -54,7 +55,7 @@ class MobilePreviewFrame extends StatelessWidget {
                   ),
                 ),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 16),
             ],
           );
         },

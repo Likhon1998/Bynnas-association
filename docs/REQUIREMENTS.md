@@ -4,16 +4,16 @@
 
 Build an Association Management Application that supports approximately 3,000 members with:
 
-1. A Flutter Android/iOS member application.
-2. A Laravel Blade + Tailwind web admin panel.
-3. One shared Laravel REST API and MySQL/MariaDB database.
+1. A Flutter Android/iOS application for **members and staff** (role-based UI).
+2. One shared Laravel REST API and MySQL/MariaDB database.
+3. Web Blade admin UI is **retired** (mobile-only product surface).
 
 ## Functional requirements
 
 ### Identity and membership
 
 - Every member has a unique `member_id`.
-- Users authenticate with email/password (mobile via Sanctum token; admin via session).
+- Users authenticate with email/password via Sanctum token in the Flutter app.
 - Four roles: Super Admin, Admin, Accountant, Member.
 - Members may access only their own private profile and financial records.
 - Staff permissions are enforced on the backend (policies + middleware), never only in the client.
@@ -52,10 +52,14 @@ Build an Association Management Application that supports approximately 3,000 me
 - Feature tests for critical auth and (later) financial invariants.
 - Git-based version control; no destructive production database operations during development.
 
+## Product surface
+
+- **Flutter app only** for members and staff/admin. No web admin dependency for day-to-day operations.
+- Laravel exposes `/api/v1` only as the backend; Blade web UI is retired (mobile-only notice pages).
+
 ## Out of scope (current phase)
 
-- Blade/Flutter finance UI (plans/dues/payments screens)
-- Bulk member import
-- Production-verified FCM delivery (interfaces + token APIs ready; needs credentials + worker)
+- Bulk member import (CSV/Excel)
+- Production-verified FCM push delivery (APIs ready; needs credentials + queue worker)
 - Multi-currency FX
-- Payment gateway integrations
+- Payment gateway integrations (staff records cash/bank/cheque in-app)

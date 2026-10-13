@@ -32,7 +32,7 @@ class EnsureStaffUser
 
             return redirect()
                 ->route('login')
-                ->withErrors(['email' => 'Members must use the mobile application.']);
+                ->withErrors(['email' => 'Use the Flutter mobile application. Web admin is retired.']);
         }
 
         return $next($request);

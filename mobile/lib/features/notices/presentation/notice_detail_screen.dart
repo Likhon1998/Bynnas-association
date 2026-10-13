@@ -3,8 +3,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../../../core/error/app_exception.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../shared/widgets/app_format.dart';
 import '../../../shared/widgets/brand_atmosphere.dart';
+import '../../../shared/widgets/gradient_button.dart';
+import '../../../shared/widgets/status_chip.dart';
+import '../../auth/presentation/auth_controller.dart';
+import '../../staff/presentation/staff_controllers.dart';
 import 'notice_controllers.dart';
 
 class NoticeDetailScreen extends ConsumerWidget {
@@ -15,6 +21,8 @@ class NoticeDetailScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final notice = ref.watch(noticeDetailProvider(noticeId));
+    final isStaff =
+        ref.watch(authControllerProvider).asData?.value?.isStaff ?? false;
 
     return Scaffold(
       body: BrandAtmosphere(
@@ -52,7 +60,7 @@ class NoticeDetailScreen extends ConsumerWidget {
                     child: Padding(
                       padding: const EdgeInsets.all(24),
                       child: Text(
-                        error.toString(),
+                        AppFormat.friendlyError(error),
                         textAlign: TextAlign.center,
                         style: GoogleFonts.plusJakartaSans(
                           color: AppColors.danger,
@@ -73,13 +81,20 @@ class NoticeDetailScreen extends ConsumerWidget {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(
-                                item.title,
-                                style: GoogleFonts.plusJakartaSans(
-                                  color: AppColors.navy,
-                                  fontWeight: FontWeight.w800,
-                                  fontSize: 22,
-                                ),
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      item.title,
+                                      style: GoogleFonts.plusJakartaSans(
+                                        color: AppColors.navy,
+                                        fontWeight: FontWeight.w800,
+                                        fontSize: 22,
+                                      ),
+                                    ),
+                                  ),
+                                  StatusChip(item.status),
+                                ],
                               ),
                               if (item.publishAt != null) ...[
                                 const SizedBox(height: 8),
@@ -104,6 +119,41 @@ class NoticeDetailScreen extends ConsumerWidget {
                           ),
                         ),
                       ),
+                      if (isStaff && item.status == 'draft') ...[
+                        const SizedBox(height: 16),
+                        GradientButton(
+                          label: 'Publish notice',
+                          icon: Icons.send_rounded,
+                          onPressed: () async {
+                            try {
+                              await ref
+                                  .read(staffApiProvider)
+                                  .publishNotice(noticeId);
+                              ref.invalidate(noticeDetailProvider(noticeId));
+                              ref.invalidate(noticesListProvider);
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('Notice published'),
+                                  ),
+                                );
+                              }
+                            } catch (error) {
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      error is AppException
+                                          ? error.message
+                                          : AppFormat.friendlyError(error),
+                                    ),
+                                  ),
+                                );
+                              }
+                            }
+                          },
+                        ),
+                      ],
                     ],
                   ),
                 ),

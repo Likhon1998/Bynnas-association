@@ -16,7 +16,9 @@ class AuthenticatedSessionController extends Controller
      */
     public function create(): View
     {
-        return view('auth.login');
+        return view('auth.login', [
+            'mobileOnlyNotice' => __('Web admin is retired. Use the Flutter mobile app for association management.'),
+        ]);
     }
 
     /**

@@ -4,11 +4,14 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../core/theme/app_colors.dart';
+import '../../../shared/widgets/app_format.dart';
 import '../../../shared/widgets/brand_atmosphere.dart';
 import '../../../shared/widgets/brand_mark.dart';
-import '../../../shared/widgets/gradient_button.dart';
+import '../../../shared/widgets/section_card.dart';
 import '../../auth/presentation/auth_controller.dart';
+import '../../finance/presentation/finance_controllers.dart';
 import '../../notices/presentation/notice_controllers.dart';
+import '../../staff/presentation/staff_home_screen.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
@@ -17,15 +20,25 @@ class HomeScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final authState = ref.watch(authControllerProvider);
     final user = authState.asData?.value;
+
+    if (user != null && user.isStaff) {
+      return const StaffHomeScreen();
+    }
+
     final unread = ref.watch(unreadCountProvider).asData?.value ?? 0;
+    final balance = ref.watch(financeBalanceProvider);
 
     return Scaffold(
       body: BrandAtmosphere(
         child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+          child: RefreshIndicator(
+            color: AppColors.accent,
+            onRefresh: () async {
+              await ref.read(financeBalanceProvider.notifier).refresh();
+              await ref.read(unreadCountProvider.notifier).refresh();
+            },
+            child: ListView(
+              padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
               children: [
                 Row(
                   children: [
@@ -42,147 +55,282 @@ class HomeScreen extends ConsumerWidget {
                     ),
                     IconButton(
                       tooltip: 'Sign out',
-                      onPressed: () {
-                        ref.read(authControllerProvider.notifier).logout();
-                      },
+                      onPressed: () =>
+                          ref.read(authControllerProvider.notifier).logout(),
                       icon: const Icon(Icons.logout_rounded),
                       color: AppColors.navy,
                     ),
                   ],
                 ),
-                const SizedBox(height: 28),
+                const SizedBox(height: 14),
                 Text(
-                  user == null ? 'Welcome' : 'Welcome, ${user.name}',
+                  user == null ? 'Welcome' : 'Hello, ${user.name.split(' ').first}',
                   style: GoogleFonts.plusJakartaSans(
                     color: AppColors.navy,
-                    fontWeight: FontWeight.w800,
-                    fontSize: 28,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 20,
                   ),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 3),
                 Text(
-                  'Your private membership space.',
+                  'Track dues, payments, and association updates.',
                   style: GoogleFonts.plusJakartaSans(
                     color: AppColors.textMuted,
                     fontWeight: FontWeight.w500,
-                    fontSize: 14,
+                    fontSize: 12,
                   ),
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: 20),
                 if (user != null) ...[
-                  DecoratedBox(
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.94),
-                      borderRadius: BorderRadius.circular(20),
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppColors.navy.withValues(alpha: 0.05),
-                          blurRadius: 18,
-                          offset: const Offset(0, 8),
+                  SectionCard(
+                    padding: const EdgeInsets.all(18),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'MEMBER ID',
+                                style: GoogleFonts.plusJakartaSans(
+                                  color: AppColors.accent,
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 11,
+                                  letterSpacing: 1.1,
+                                ),
+                              ),
+                              const SizedBox(height: 6),
+                              Text(
+                                user.memberId ?? 'Pending assignment',
+                                style: GoogleFonts.plusJakartaSans(
+                                  color: AppColors.navy,
+                                  fontWeight: FontWeight.w800,
+                                  fontSize: 18,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                user.email,
+                                style: GoogleFonts.plusJakartaSans(
+                                  color: AppColors.textMuted,
+                                  fontWeight: FontWeight.w500,
+                                  fontSize: 13,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Container(
+                          width: 48,
+                          height: 48,
+                          decoration: BoxDecoration(
+                            gradient: AppColors.brandGradient,
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                          child: const Icon(
+                            Icons.badge_outlined,
+                            color: Colors.white,
+                          ),
                         ),
                       ],
                     ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(18),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                  ),
+                  const SizedBox(height: 14),
+                  balance.when(
+                    loading: () => const SectionCard(
+                      child: SizedBox(
+                        height: 72,
+                        child: Center(
+                          child: CircularProgressIndicator(
+                            color: AppColors.accent,
+                          ),
+                        ),
+                      ),
+                    ),
+                    error: (_, _) => SectionCard(
+                      onTap: () =>
+                          ref.read(financeBalanceProvider.notifier).refresh(),
+                      child: Text(
+                        'Could not load balance · Tap to retry',
+                        style: GoogleFonts.plusJakartaSans(
+                          color: AppColors.textMuted,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                    data: (data) => SectionCard(
+                      onTap: () => context.go('/finance'),
+                      child: Row(
                         children: [
-                          Text(
-                            'Member ID',
-                            style: GoogleFonts.plusJakartaSans(
-                              color: AppColors.accent,
-                              fontWeight: FontWeight.w700,
-                              fontSize: 11,
-                              letterSpacing: 1.2,
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Outstanding balance',
+                                  style: GoogleFonts.plusJakartaSans(
+                                    color: AppColors.textMuted,
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 13,
+                                  ),
+                                ),
+                                const SizedBox(height: 6),
+                                Text(
+                                  AppFormat.money(data.outstanding),
+                                  style: GoogleFonts.plusJakartaSans(
+                                    color: AppColors.accent,
+                                    fontWeight: FontWeight.w800,
+                                    fontSize: 26,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
-                          const SizedBox(height: 6),
-                          Text(
-                            user.memberId ?? 'Pending assignment',
-                            style: GoogleFonts.plusJakartaSans(
-                              color: AppColors.navy,
-                              fontWeight: FontWeight.w800,
-                              fontSize: 20,
-                            ),
-                          ),
-                          const SizedBox(height: 10),
-                          Text(
-                            user.email,
-                            style: GoogleFonts.plusJakartaSans(
-                              color: AppColors.textMuted,
-                              fontWeight: FontWeight.w500,
-                            ),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              Text(
+                                'Paid ${AppFormat.money(data.totalAllocated)}',
+                                style: GoogleFonts.plusJakartaSans(
+                                  color: AppColors.textMuted,
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 12,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                'View finances →',
+                                style: GoogleFonts.plusJakartaSans(
+                                  color: AppColors.navy,
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 13,
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ),
                     ),
                   ),
-                  const SizedBox(height: 18),
-                  GradientButton(
-                    label: 'View my profile',
-                    icon: Icons.person_outline_rounded,
-                    onPressed: () => context.push('/profile'),
+                  const SizedBox(height: 22),
+                  Text(
+                    'Quick actions',
+                    style: GoogleFonts.plusJakartaSans(
+                      color: AppColors.navy,
+                      fontWeight: FontWeight.w800,
+                      fontSize: 16,
+                    ),
                   ),
                   const SizedBox(height: 12),
-                  GradientButton(
-                    label: 'My finances',
-                    icon: Icons.account_balance_wallet_outlined,
-                    onPressed: () => context.push('/finance'),
-                  ),
-                  const SizedBox(height: 12),
-                  OutlinedButton(
-                    onPressed: () => context.push('/notices'),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: AppColors.navy,
-                      side: const BorderSide(color: AppColors.fieldBorder),
-                      minimumSize: const Size.fromHeight(48),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
+                  GridView.count(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    crossAxisCount: 2,
+                    mainAxisSpacing: 10,
+                    crossAxisSpacing: 10,
+                    childAspectRatio: 1.35,
+                    children: [
+                      _QuickAction(
+                        icon: Icons.account_balance_wallet_outlined,
+                        label: 'My finances',
+                        onTap: () => context.go('/finance'),
                       ),
-                    ),
-                    child: const Text('Notices'),
-                  ),
-                  const SizedBox(height: 12),
-                  OutlinedButton(
-                    onPressed: () => context.push('/notifications'),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: AppColors.navy,
-                      side: const BorderSide(color: AppColors.fieldBorder),
-                      minimumSize: const Size.fromHeight(48),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
+                      _QuickAction(
+                        icon: Icons.receipt_long_outlined,
+                        label: 'Payments',
+                        onTap: () => context.push('/finance/payments'),
                       ),
-                    ),
-                    child: Text(
-                      unread > 0
-                          ? 'Notifications ($unread unread)'
-                          : 'Notifications',
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  OutlinedButton(
-                    onPressed: () {
-                      ref.read(authControllerProvider.notifier).logoutAll();
-                    },
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: AppColors.navy,
-                      side: const BorderSide(color: AppColors.fieldBorder),
-                      minimumSize: const Size.fromHeight(48),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
+                      _QuickAction(
+                        icon: Icons.campaign_outlined,
+                        label: 'Notices',
+                        badge: unread > 0 ? '$unread' : null,
+                        onTap: () => context.go('/notices'),
                       ),
-                    ),
-                    child: const Text('Sign out of all devices'),
+                      _QuickAction(
+                        icon: Icons.person_outline_rounded,
+                        label: 'Profile',
+                        onTap: () => context.go('/profile'),
+                      ),
+                    ],
                   ),
                 ] else
                   const Padding(
-                    padding: EdgeInsets.only(top: 24),
-                    child: CircularProgressIndicator(color: AppColors.accent),
+                    padding: EdgeInsets.only(top: 40),
+                    child: Center(
+                      child: CircularProgressIndicator(color: AppColors.accent),
+                    ),
                   ),
               ],
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _QuickAction extends StatelessWidget {
+  const _QuickAction({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+    this.badge,
+  });
+
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+  final String? badge;
+
+  @override
+  Widget build(BuildContext context) {
+    return SectionCard(
+      onTap: onTap,
+      padding: const EdgeInsets.all(14),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  color: AppColors.mist,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(icon, color: AppColors.navy, size: 20),
+              ),
+              const Spacer(),
+              if (badge != null)
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: AppColors.accent.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                  child: Text(
+                    badge!,
+                    style: GoogleFonts.plusJakartaSans(
+                      color: AppColors.accent,
+                      fontWeight: FontWeight.w800,
+                      fontSize: 11,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+          const Spacer(),
+          Text(
+            label,
+            style: GoogleFonts.plusJakartaSans(
+              color: AppColors.navy,
+              fontWeight: FontWeight.w700,
+              fontSize: 15,
+            ),
+          ),
+        ],
       ),
     );
   }

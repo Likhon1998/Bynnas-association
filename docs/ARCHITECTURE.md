@@ -4,23 +4,20 @@
 
 ```text
 ┌────────────────────┐      Sanctum token       ┌──────────────────────────┐
-│  Flutter Mobile    │ ───────────────────────► │                          │
-│  (Riverpod/Dio)    │                          │   Laravel Backend        │
-└────────────────────┘                          │   /api/v1/*              │
-                                                │                          │
-┌────────────────────┐      Session cookie      │   Blade Admin Panel      │
-│  Web Admin (Blade) │ ───────────────────────► │                          │
+│  Flutter App       │ ───────────────────────► │   Laravel API            │
+│  Members + Staff   │                          │   /api/v1/*              │
+│  (Riverpod/Dio)    │                          │   Domain + policies      │
 └────────────────────┘                          └────────────┬─────────────┘
                                                              │
                                                              ▼
                                                     MySQL / MariaDB
 ```
 
-One Laravel application owns:
+Product surface is **mobile-only**. Laravel owns:
 
-- Mobile REST API (`routes/api.php` → `routes/api/v1.php`)
-- Web admin UI (`routes/web.php` + Breeze auth)
+- REST API (`routes/api.php` → `routes/api/v1.php`) used by the Flutter app
 - Domain models, policies, services, and migrations
+- Web routes only show a retired/mobile-only notice (no admin UI dependency)
 
 ## Backend structure
 

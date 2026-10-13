@@ -62,12 +62,13 @@ Accept: application/json
 - Inactive users cannot log in.
 - If a user is deactivated while a token is still valid, authenticated API routes return `403` and revoke the current token.
 
-### Web admin auth
+### Clients
 
-- Session-based (Laravel Breeze).
-- Only staff roles (`super_admin`, `admin`, `accountant`) may log in to the web panel.
-- Members are directed to the mobile app.
-- Public self-registration is disabled.
+- **Flutter app** is the only product UI (members and staff/admin, role-based menus).
+- All day-to-day ops (add members, plans, dues, payments, notices, reports) are handled in the app against this API.
+- Web Blade admin panel is retired; `/` and `/dashboard` show a mobile-only notice.
+- Staff and members authenticate with Sanctum bearer tokens.
+- Public self-registration is disabled (staff create members in-app).
 
 ## Conventions
 

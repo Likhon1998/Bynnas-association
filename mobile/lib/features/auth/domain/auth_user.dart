@@ -15,6 +15,11 @@ class AuthUser {
   final String? memberId;
   final bool isActive;
 
+  bool get isMember => role == 'member';
+
+  bool get isStaff =>
+      role == 'admin' || role == 'super_admin' || role == 'accountant';
+
   factory AuthUser.fromJson(Map<String, dynamic> json) {
     return AuthUser(
       id: json['id'] as int,

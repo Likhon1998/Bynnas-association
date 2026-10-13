@@ -2,6 +2,12 @@
     <!-- Session Status -->
     <x-auth-session-status class="mb-4" :status="session('status')" />
 
+    @isset($mobileOnlyNotice)
+        <div class="mb-4 rounded-md bg-amber-50 border border-amber-200 text-amber-900 text-sm px-4 py-3">
+            {{ $mobileOnlyNotice }}
+        </div>
+    @endisset
+
     <form method="POST" action="{{ route('login') }}">
         @csrf
 

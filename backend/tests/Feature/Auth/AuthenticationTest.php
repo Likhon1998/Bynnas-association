@@ -14,7 +14,8 @@ class AuthenticationTest extends TestCase
     {
         $response = $this->get('/login');
 
-        $response->assertStatus(200);
+        $response->assertStatus(200)
+            ->assertSee('Web admin is retired');
     }
 
     public function test_staff_can_authenticate_using_the_login_screen(): void

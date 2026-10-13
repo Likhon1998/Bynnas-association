@@ -4,7 +4,12 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../core/theme/app_colors.dart';
+import '../../../shared/widgets/app_format.dart';
 import '../../../shared/widgets/brand_atmosphere.dart';
+import '../../../shared/widgets/screen_back_button.dart';
+import '../../../shared/widgets/section_card.dart';
+import '../../../shared/widgets/status_chip.dart';
+import '../../auth/presentation/auth_controller.dart';
 import 'notice_controllers.dart';
 
 class NoticesListScreen extends ConsumerWidget {
@@ -13,34 +18,38 @@ class NoticesListScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final notices = ref.watch(noticesListProvider);
+    final isStaff =
+        ref.watch(authControllerProvider).asData?.value?.isStaff ?? false;
 
     return Scaffold(
+      floatingActionButton: isStaff
+          ? FloatingActionButton.extended(
+              onPressed: () => context.push('/staff/notices/compose'),
+              backgroundColor: AppColors.navy,
+              foregroundColor: Colors.white,
+              icon: const Icon(Icons.edit_outlined),
+              label: const Text('Compose'),
+            )
+          : null,
       body: BrandAtmosphere(
         child: SafeArea(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(8, 8, 16, 0),
-                child: Row(
-                  children: [
-                    IconButton(
-                      onPressed: () => context.pop(),
-                      icon: const Icon(Icons.arrow_back_rounded),
-                      color: AppColors.navy,
-                    ),
-                    Expanded(
-                      child: Text(
-                        'Notices',
-                        style: GoogleFonts.plusJakartaSans(
-                          color: AppColors.navy,
-                          fontWeight: FontWeight.w800,
-                          fontSize: 22,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+              ScreenHeader(
+                title: 'Notices',
+                subtitle: 'Updates from the association',
+                leading: context.canPop()
+                    ? const ScreenBackButton()
+                    : const SizedBox(width: 8),
+                actions: [
+                  IconButton(
+                    tooltip: 'Notifications',
+                    onPressed: () => context.push('/notifications'),
+                    icon: const Icon(Icons.notifications_none_rounded),
+                    color: AppColors.navy,
+                  ),
+                ],
               ),
               Expanded(
                 child: notices.when(
@@ -49,7 +58,7 @@ class NoticesListScreen extends ConsumerWidget {
                   ),
                   error: (error, _) => _MessageState(
                     title: 'Could not load notices',
-                    detail: error.toString(),
+                    detail: AppFormat.friendlyError(error),
                     onRetry: () =>
                         ref.read(noticesListProvider.notifier).refresh(),
                   ),
@@ -67,44 +76,43 @@ class NoticesListScreen extends ConsumerWidget {
                       onRefresh: () =>
                           ref.read(noticesListProvider.notifier).refresh(),
                       child: ListView.separated(
-                        padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
+                        padding: EdgeInsets.fromLTRB(20, 8, 20, isStaff ? 88 : 24),
                         itemCount: items.length,
                         separatorBuilder: (_, _) => const SizedBox(height: 10),
                         itemBuilder: (context, index) {
                           final notice = items[index];
-                          return Material(
-                            color: Colors.white.withValues(alpha: 0.95),
-                            borderRadius: BorderRadius.circular(16),
-                            child: InkWell(
-                              borderRadius: BorderRadius.circular(16),
-                              onTap: () =>
-                                  context.push('/notices/${notice.id}'),
-                              child: Padding(
-                                padding: const EdgeInsets.all(16),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
+                          return SectionCard(
+                            onTap: () =>
+                                context.push('/notices/${notice.id}'),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
                                   children: [
-                                    Text(
-                                      notice.title,
-                                      style: GoogleFonts.plusJakartaSans(
-                                        color: AppColors.navy,
-                                        fontWeight: FontWeight.w700,
-                                        fontSize: 16,
+                                    Expanded(
+                                      child: Text(
+                                        notice.title,
+                                        style: GoogleFonts.plusJakartaSans(
+                                          color: AppColors.navy,
+                                          fontWeight: FontWeight.w700,
+                                          fontSize: 16,
+                                        ),
                                       ),
                                     ),
-                                    const SizedBox(height: 6),
-                                    Text(
-                                      notice.body,
-                                      maxLines: 2,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: GoogleFonts.plusJakartaSans(
-                                        color: AppColors.textMuted,
-                                        fontSize: 13,
-                                      ),
-                                    ),
+                                    if (isStaff) StatusChip(notice.status),
                                   ],
                                 ),
-                              ),
+                                const SizedBox(height: 6),
+                                Text(
+                                  notice.body,
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: GoogleFonts.plusJakartaSans(
+                                    color: AppColors.textMuted,
+                                    fontSize: 13,
+                                  ),
+                                ),
+                              ],
                             ),
                           );
                         },

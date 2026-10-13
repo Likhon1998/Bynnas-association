@@ -104,7 +104,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                             const BrandMark(),
                             const SizedBox(height: 14),
                             Text(
-                              'Your membership, clearly in view.',
+                              'Association dues, payments, and notices — in one place.',
                               style: GoogleFonts.plusJakartaSans(
                                 color: AppColors.textMuted,
                                 fontWeight: FontWeight.w500,
@@ -113,7 +113,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                             ),
                             const SizedBox(height: 36),
                             Text(
-                              'Sign In',
+                              'Sign in',
                               style: GoogleFonts.plusJakartaSans(
                                 color: AppColors.navy,
                                 fontWeight: FontWeight.w800,
@@ -123,7 +123,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                             ),
                             const SizedBox(height: 8),
                             Text(
-                              'Use your member email to continue.',
+                              'Use your association email and password.',
                               style: GoogleFonts.plusJakartaSans(
                                 color: AppColors.textMuted,
                                 fontWeight: FontWeight.w500,
@@ -232,7 +232,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                                         const SizedBox(width: 6),
                                         Flexible(
                                           child: Text(
-                                            'Secure access for association members.',
+                                            'Secure access for members and staff.',
                                             style: GoogleFonts.plusJakartaSans(
                                               color: AppColors.textMuted,
                                               fontWeight: FontWeight.w500,

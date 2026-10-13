@@ -7,6 +7,7 @@ import '../../../core/error/app_exception.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/widgets/brand_atmosphere.dart';
 import '../../../shared/widgets/gradient_button.dart';
+import '../../auth/presentation/auth_controller.dart';
 import 'member_controller.dart';
 
 class MemberProfileScreen extends ConsumerStatefulWidget {
@@ -97,21 +98,33 @@ class _MemberProfileScreenState extends ConsumerState<MemberProfileScreen> {
           child: Column(
             children: [
               Padding(
-                padding: const EdgeInsets.fromLTRB(8, 4, 16, 0),
+                padding: const EdgeInsets.fromLTRB(8, 4, 8, 0),
                 child: Row(
                   children: [
-                    IconButton(
-                      onPressed: () => context.pop(),
-                      icon: const Icon(Icons.arrow_back_rounded),
-                      color: AppColors.navy,
-                    ),
-                    Text(
-                      'My profile',
-                      style: GoogleFonts.plusJakartaSans(
+                    if (context.canPop())
+                      IconButton(
+                        onPressed: () => context.pop(),
+                        icon: const Icon(Icons.arrow_back_rounded),
                         color: AppColors.navy,
-                        fontWeight: FontWeight.w800,
-                        fontSize: 20,
+                      )
+                    else
+                      const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'My profile',
+                        style: GoogleFonts.plusJakartaSans(
+                          color: AppColors.navy,
+                          fontWeight: FontWeight.w800,
+                          fontSize: 22,
+                        ),
                       ),
+                    ),
+                    IconButton(
+                      tooltip: 'Sign out',
+                      onPressed: () =>
+                          ref.read(authControllerProvider.notifier).logout(),
+                      icon: const Icon(Icons.logout_rounded),
+                      color: AppColors.navy,
                     ),
                   ],
                 ),
@@ -283,6 +296,26 @@ class _MemberProfileScreenState extends ConsumerState<MemberProfileScreen> {
                                       isLoading: _saving || memberState.isLoading,
                                       icon: Icons.check_rounded,
                                       onPressed: _saving ? null : _save,
+                                    ),
+                                    const SizedBox(height: 12),
+                                    OutlinedButton(
+                                      onPressed: () {
+                                        ref
+                                            .read(authControllerProvider.notifier)
+                                            .logoutAll();
+                                      },
+                                      style: OutlinedButton.styleFrom(
+                                        foregroundColor: AppColors.navy,
+                                        side: const BorderSide(
+                                          color: AppColors.fieldBorder,
+                                        ),
+                                        minimumSize: const Size.fromHeight(48),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(14),
+                                        ),
+                                      ),
+                                      child: const Text('Sign out of all devices'),
                                     ),
                                   ],
                                 ),

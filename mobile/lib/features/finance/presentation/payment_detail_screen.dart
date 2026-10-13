@@ -3,8 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../../../core/error/app_exception.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/widgets/brand_atmosphere.dart';
+import '../../auth/presentation/auth_controller.dart';
+import '../../staff/presentation/staff_controllers.dart';
 import 'finance_controllers.dart';
 
 class PaymentDetailScreen extends ConsumerWidget {
@@ -15,6 +18,8 @@ class PaymentDetailScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final detail = ref.watch(financePaymentDetailProvider(paymentId));
+    final user = ref.watch(authControllerProvider).asData?.value;
+    final isStaff = user?.isStaff ?? false;
 
     return Scaffold(
       body: BrandAtmosphere(
@@ -45,7 +50,8 @@ class PaymentDetailScreen extends ConsumerWidget {
               ),
               Expanded(
                 child: detail.when(
-                  loading: () => const Center(child: CircularProgressIndicator()),
+                  loading: () =>
+                      const Center(child: CircularProgressIndicator()),
                   error: (error, _) => Center(
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
@@ -80,7 +86,10 @@ class PaymentDetailScreen extends ConsumerWidget {
                           ),
                         ),
                       _line('Receipt', payment.receiptNumber),
-                      _line('Amount', '৳ ${payment.amount} ${payment.currency}'),
+                      _line(
+                        'Amount',
+                        '৳ ${payment.amount} ${payment.currency}',
+                      ),
                       _line('Status', payment.status),
                       _line('Method', payment.method ?? '—'),
                       _line('Date', payment.receivedAt ?? '—'),
@@ -106,9 +115,18 @@ class PaymentDetailScreen extends ConsumerWidget {
                             contentPadding: EdgeInsets.zero,
                             title: Text(line.periodLabel ?? 'Period'),
                             trailing: Text('৳ ${line.amount}'),
-                            subtitle: Text(line.isReversed ? 'Reversed' : 'Active'),
+                            subtitle: Text(
+                              line.isReversed ? 'Reversed' : 'Active',
+                            ),
                           ),
                         ),
+                      if (isStaff && !payment.isReversed) ...[
+                        const SizedBox(height: 24),
+                        OutlinedButton(
+                          onPressed: () => _confirmReverse(context, ref),
+                          child: const Text('Reverse payment'),
+                        ),
+                      ],
                     ],
                   ),
                 ),
@@ -118,6 +136,61 @@ class PaymentDetailScreen extends ConsumerWidget {
         ),
       ),
     );
+  }
+
+  Future<void> _confirmReverse(BuildContext context, WidgetRef ref) async {
+    final controller = TextEditingController();
+    final reason = await showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Reverse payment'),
+        content: TextField(
+          controller: controller,
+          decoration: const InputDecoration(
+            labelText: 'Reason',
+            hintText: 'Required — history is preserved',
+          ),
+          maxLines: 3,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, controller.text.trim()),
+            child: const Text('Reverse'),
+          ),
+        ],
+      ),
+    );
+    if (reason == null || reason.isEmpty || !context.mounted) {
+      return;
+    }
+    try {
+      await ref.read(staffApiProvider).reversePayment(
+            paymentId: paymentId,
+            reason: reason,
+          );
+      ref.invalidate(financePaymentDetailProvider(paymentId));
+      ref.invalidate(staffPaymentsProvider);
+      ref.invalidate(staffDashboardProvider);
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Payment reversed')),
+        );
+      }
+    } catch (error) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              error is AppException ? error.message : error.toString(),
+            ),
+          ),
+        );
+      }
+    }
   }
 
   Widget _line(String label, String value) {
