@@ -1,0 +1,55 @@
+# OS / IDE
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+!**/.env.example
+!**/.env.integration.example
+*.pem
+*.key
+auth.json
+credentials.json
+backend/.env.integration
+mobile/.env.integration
+mobile/integration_credentials.json
+
+# Logs and caches
+*.log
+.phpunit.result.cache
+.phpunit.cache/
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+
+# Backend artifacts (also covered by backend/.gitignore)
+backend/vendor/
+backend/node_modules/
+backend/public/build/
+backend/public/hot/
+backend/public/storage
+backend/storage/*.key
+backend/database/*.sqlite
+backend/database/*.sqlite-journal
+
+# Mobile artifacts (also covered by mobile/.gitignore)
+mobile/build/
+mobile/.dart_tool/
+mobile/.flutter-plugins
+mobile/.flutter-plugins-dependencies
+mobile/**/Generated.xcconfig
+mobile/**/Flutter.podspec
+
+# Coverage / test output
+coverage/
+lcov.info
+htmlcov/
