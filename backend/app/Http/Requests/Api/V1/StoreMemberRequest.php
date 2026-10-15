@@ -26,6 +26,7 @@ class StoreMemberRequest extends FormRequest
             'password' => ['nullable', 'confirmed', Password::defaults()],
             'phone' => ['nullable', 'string', 'max:32'],
             'address' => ['nullable', 'string', 'max:500'],
+            'occupation' => ['nullable', 'string', 'max:120'],
             'notes' => ['nullable', 'string', 'max:2000'],
             'joined_on' => ['nullable', 'date'],
         ];

@@ -97,4 +97,16 @@ class ReportController extends Controller
             'generated_at' => now()->toDateTimeString(),
         ], 'month-wise-report.pdf');
     }
+
+    public function currentMonthStatus(Request $request): JsonResponse
+    {
+        abort_unless($this->policy->viewReports($request->user()), 403);
+
+        $year = $request->filled('year') ? (int) $request->integer('year') : null;
+        $month = $request->filled('month') ? (int) $request->integer('month') : null;
+
+        return response()->json([
+            'data' => $this->reports->currentMonthStatus($year, $month),
+        ]);
+    }
 }

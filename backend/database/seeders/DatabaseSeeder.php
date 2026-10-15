@@ -14,8 +14,13 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+        $this->renameDemoEmail('member@bynnas.test', 'member@bynnasassociation.com');
+        $this->renameDemoEmail('admin@bynnas.test', 'admin@bynnasassociation.com');
+        $this->renameDemoEmail('accountant@bynnas.test', 'accountant@bynnasassociation.com');
+        $this->renameDemoEmail('superadmin@bynnas.test', 'superadmin@bynnasassociation.com');
+
         $member = User::query()->updateOrCreate(
-            ['email' => 'member@bynnas.test'],
+            ['email' => 'member@bynnasassociation.com'],
             [
                 'name' => 'Demo Member',
                 'password' => Hash::make('password'),
@@ -37,7 +42,7 @@ class DatabaseSeeder extends Seeder
         );
 
         User::query()->updateOrCreate(
-            ['email' => 'admin@bynnas.test'],
+            ['email' => 'admin@bynnasassociation.com'],
             [
                 'name' => 'Demo Admin',
                 'password' => Hash::make('password'),
@@ -49,7 +54,19 @@ class DatabaseSeeder extends Seeder
         );
 
         User::query()->updateOrCreate(
-            ['email' => 'superadmin@bynnas.test'],
+            ['email' => 'accountant@bynnasassociation.com'],
+            [
+                'name' => 'Demo Accountant',
+                'password' => Hash::make('password'),
+                'role' => UserRole::Accountant,
+                'member_id' => null,
+                'is_active' => true,
+                'email_verified_at' => now(),
+            ]
+        );
+
+        User::query()->updateOrCreate(
+            ['email' => 'superadmin@bynnasassociation.com'],
             [
                 'name' => 'Demo Super Admin',
                 'password' => Hash::make('password'),
@@ -59,5 +76,21 @@ class DatabaseSeeder extends Seeder
                 'email_verified_at' => now(),
             ]
         );
+    }
+
+    private function renameDemoEmail(string $from, string $to): void
+    {
+        $existing = User::query()->where('email', $from)->first();
+        if ($existing === null) {
+            return;
+        }
+
+        if (User::query()->where('email', $to)->exists()) {
+            $existing->delete();
+
+            return;
+        }
+
+        $existing->forceFill(['email' => $to])->save();
     }
 }

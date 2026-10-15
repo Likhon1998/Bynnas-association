@@ -23,6 +23,7 @@ class _MemberProfileScreenState extends ConsumerState<MemberProfileScreen> {
   late final TextEditingController _nameController;
   late final TextEditingController _phoneController;
   late final TextEditingController _addressController;
+  late final TextEditingController _occupationController;
   var _initialized = false;
   var _saving = false;
 
@@ -32,6 +33,7 @@ class _MemberProfileScreenState extends ConsumerState<MemberProfileScreen> {
     _nameController = TextEditingController();
     _phoneController = TextEditingController();
     _addressController = TextEditingController();
+    _occupationController = TextEditingController();
   }
 
   @override
@@ -39,6 +41,7 @@ class _MemberProfileScreenState extends ConsumerState<MemberProfileScreen> {
     _nameController.dispose();
     _phoneController.dispose();
     _addressController.dispose();
+    _occupationController.dispose();
     super.dispose();
   }
 
@@ -50,6 +53,7 @@ class _MemberProfileScreenState extends ConsumerState<MemberProfileScreen> {
     _nameController.text = member.name;
     _phoneController.text = member.phone ?? '';
     _addressController.text = member.address ?? '';
+    _occupationController.text = member.occupation ?? '';
     _initialized = true;
   }
 
@@ -63,6 +67,7 @@ class _MemberProfileScreenState extends ConsumerState<MemberProfileScreen> {
           name: _nameController.text.trim(),
           phone: _phoneController.text.trim(),
           address: _addressController.text.trim(),
+          occupation: _occupationController.text.trim(),
         );
 
     if (!mounted) {
@@ -267,6 +272,15 @@ class _MemberProfileScreenState extends ConsumerState<MemberProfileScreen> {
                                       decoration: const InputDecoration(
                                         labelText: 'Phone',
                                         prefixIcon: Icon(Icons.phone_outlined),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 12),
+                                    TextFormField(
+                                      controller: _occupationController,
+                                      decoration: const InputDecoration(
+                                        labelText: 'Occupation',
+                                        prefixIcon:
+                                            Icon(Icons.work_outline_rounded),
                                       ),
                                     ),
                                     const SizedBox(height: 12),

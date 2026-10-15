@@ -1,65 +1,127 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 
 import '../../core/theme/app_colors.dart';
 
-/// Soft purple/blue wave atmosphere from the approved login design.
-class BrandAtmosphere extends StatelessWidget {
-  const BrandAtmosphere({super.key, required this.child});
+/// Living brand wash — soft ribbons + drifting orbs behind content.
+class BrandAtmosphere extends StatefulWidget {
+  const BrandAtmosphere({
+    super.key,
+    required this.child,
+    this.intense = false,
+  });
 
   final Widget child;
+  final bool intense;
+
+  @override
+  State<BrandAtmosphere> createState() => _BrandAtmosphereState();
+}
+
+class _BrandAtmosphereState extends State<BrandAtmosphere>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _drift;
+
+  @override
+  void initState() {
+    super.initState();
+    _drift = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 14),
+    )..repeat(reverse: true);
+  }
+
+  @override
+  void dispose() {
+    _drift.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
+    final intensity = widget.intense ? 1.15 : 1.0;
+
     return ColoredBox(
       color: AppColors.page,
-      child: Stack(
-        fit: StackFit.expand,
-        children: [
-          Positioned(
-            top: -90,
-            right: -70,
-            child: _Blob(
-              width: 280,
-              height: 240,
-              colors: [
-                AppColors.lavendar.withValues(alpha: 0.55),
-                AppColors.softBlue.withValues(alpha: 0.35),
-              ],
-            ),
-          ),
-          Positioned(
-            top: 40,
-            right: -20,
-            child: _Blob(
-              width: 160,
-              height: 140,
-              colors: [
-                AppColors.softBlue.withValues(alpha: 0.40),
-                AppColors.lavendar.withValues(alpha: 0.20),
-              ],
-            ),
-          ),
-          Positioned(
-            bottom: -120,
-            left: -90,
-            child: _Blob(
-              width: 340,
-              height: 280,
-              colors: [
-                AppColors.magenta.withValues(alpha: 0.22),
-                AppColors.blue.withValues(alpha: 0.28),
-              ],
-            ),
-          ),
-          Positioned.fill(child: child),
-        ],
+      child: AnimatedBuilder(
+        animation: _drift,
+        builder: (context, child) {
+          final t = _drift.value;
+          final sway = math.sin(t * math.pi) * 18;
+
+          return Stack(
+            fit: StackFit.expand,
+            children: [
+              const DecoratedBox(
+                decoration: BoxDecoration(gradient: AppColors.heroWash),
+              ),
+              Positioned(
+                top: -110 + sway * 0.35,
+                right: -80 - sway * 0.4,
+                child: _Orb(
+                  width: 300 * intensity,
+                  height: 260 * intensity,
+                  colors: [
+                    AppColors.lavendar.withValues(alpha: 0.45),
+                    AppColors.softBlue.withValues(alpha: 0.18),
+                  ],
+                ),
+              ),
+              Positioned(
+                top: 70 - sway * 0.25,
+                right: -10 + sway * 0.5,
+                child: _Orb(
+                  width: 170 * intensity,
+                  height: 150 * intensity,
+                  colors: [
+                    AppColors.blue.withValues(alpha: 0.16),
+                    AppColors.lavendar.withValues(alpha: 0.08),
+                  ],
+                ),
+              ),
+              Positioned(
+                bottom: -140 - sway * 0.3,
+                left: -100 + sway * 0.45,
+                child: _Orb(
+                  width: 360 * intensity,
+                  height: 300 * intensity,
+                  colors: [
+                    AppColors.magenta.withValues(alpha: 0.14),
+                    AppColors.blue.withValues(alpha: 0.18),
+                  ],
+                ),
+              ),
+              Positioned(
+                left: 0,
+                right: 0,
+                top: 0,
+                height: 4,
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    gradient: AppColors.brandGradient,
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.magenta.withValues(alpha: 0.25),
+                        blurRadius: 12,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              Positioned.fill(child: child!),
+            ],
+          );
+        },
+        child: widget.child,
       ),
     );
   }
 }
 
-class _Blob extends StatelessWidget {
-  const _Blob({
+class _Orb extends StatelessWidget {
+  const _Orb({
     required this.width,
     required this.height,
     required this.colors,

@@ -57,9 +57,22 @@ Build an Association Management Application that supports approximately 3,000 me
 - **Flutter app only** for members and staff/admin. No web admin dependency for day-to-day operations.
 - Laravel exposes `/api/v1` only as the backend; Blade web UI is retired (mobile-only notice pages).
 
+## Recently closed gaps (in app)
+
+- Member photo + occupation
+- Current-month paid/unpaid roster
+- Report PDF share/download in Flutter
+- Staff member payment history + recorded-by display
+- Notice audience: all or selected members
+- SMS broadcast + delivery reports (log gateway in dev; swap provider for production)
+- Database backup API + `php artisan bynnas:backup-database`
+- Payment reversal approval workflow (Accountant requests; Admin/Super Admin approve)
+- Role-aware staff menus + Super Admin staff account creation
+
 ## Out of scope (current phase)
 
 - Bulk member import (CSV/Excel)
+- Production SMS provider credentials (gateway interface ready; default is log sender)
 - Production-verified FCM push delivery (APIs ready; needs credentials + queue worker)
 - Multi-currency FX
 - Payment gateway integrations (staff records cash/bank/cheque in-app)

@@ -1,16 +1,21 @@
 <?php
 
 use App\Http\Controllers\Api\V1\AuthController;
+use App\Http\Controllers\Api\V1\BackupController;
 use App\Http\Controllers\Api\V1\ContributionPlanController;
 use App\Http\Controllers\Api\V1\DashboardController;
 use App\Http\Controllers\Api\V1\DeviceTokenController;
 use App\Http\Controllers\Api\V1\DueController;
+use App\Http\Controllers\Api\V1\FinancialApprovalController;
 use App\Http\Controllers\Api\V1\HealthController;
 use App\Http\Controllers\Api\V1\MemberController;
+use App\Http\Controllers\Api\V1\MemberPhotoController;
 use App\Http\Controllers\Api\V1\NoticeController;
 use App\Http\Controllers\Api\V1\NotificationController;
 use App\Http\Controllers\Api\V1\PaymentController;
 use App\Http\Controllers\Api\V1\ReportController;
+use App\Http\Controllers\Api\V1\SmsController;
+use App\Http\Controllers\Api\V1\StaffUserController;
 use App\Http\Controllers\Api\V1\StatementController;
 use App\Models\User;
 use Illuminate\Support\Facades\Route;
@@ -67,6 +72,7 @@ Route::middleware(['auth:sanctum', 'active'])->group(function () {
     Route::patch('/members/{member}', [MemberController::class, 'update']);
     Route::post('/members/{member}/deactivate', [MemberController::class, 'deactivate']);
     Route::post('/members/{member}/reactivate', [MemberController::class, 'reactivate']);
+    Route::post('/members/{member}/photo', [MemberPhotoController::class, 'store']);
 
     // Contribution plans & assignments
     Route::get('/contribution-plans', [ContributionPlanController::class, 'index']);
@@ -88,6 +94,10 @@ Route::middleware(['auth:sanctum', 'active'])->group(function () {
     Route::post('/payments', [PaymentController::class, 'store']);
     Route::get('/payments/{payment}', [PaymentController::class, 'show']);
     Route::post('/payments/{payment}/reverse', [PaymentController::class, 'reverse']);
+    Route::post('/payments/{payment}/reverse-request', [FinancialApprovalController::class, 'requestReverse']);
+    Route::get('/financial-approvals', [FinancialApprovalController::class, 'index']);
+    Route::post('/financial-approvals/{financialChangeRequest}/approve', [FinancialApprovalController::class, 'approve']);
+    Route::post('/financial-approvals/{financialChangeRequest}/reject', [FinancialApprovalController::class, 'reject']);
 
     // Dashboard & reports (totals computed server-side)
     Route::get('/dashboard', [DashboardController::class, 'show']);
@@ -95,8 +105,20 @@ Route::middleware(['auth:sanctum', 'active'])->group(function () {
     Route::get('/statements/{member}', [StatementController::class, 'show']);
     Route::get('/reports/member-wise', [ReportController::class, 'memberWise']);
     Route::get('/reports/month-wise', [ReportController::class, 'monthWise']);
+    Route::get('/reports/current-month-status', [ReportController::class, 'currentMonthStatus']);
     Route::get('/reports/member-wise/pdf', [ReportController::class, 'exportMemberWisePdf']);
     Route::get('/reports/month-wise/pdf', [ReportController::class, 'exportMonthWisePdf']);
+
+    // SMS broadcast + delivery reports
+    Route::get('/sms', [SmsController::class, 'index']);
+    Route::post('/sms', [SmsController::class, 'store']);
+    Route::get('/sms/{smsMessage}', [SmsController::class, 'show']);
+
+    // Super Admin staff accounts + backups
+    Route::get('/staff-users', [StaffUserController::class, 'index']);
+    Route::post('/staff-users', [StaffUserController::class, 'store']);
+    Route::get('/backups', [BackupController::class, 'index']);
+    Route::post('/backups', [BackupController::class, 'store']);
 
     // Notices (members see intended only; staff manage drafts/publish)
     Route::get('/notices', [NoticeController::class, 'index']);

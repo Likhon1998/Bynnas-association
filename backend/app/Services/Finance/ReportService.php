@@ -571,4 +571,105 @@ class ReportService
             'outstanding' => Money::sub($expected, $allocated),
         ];
     }
+
+    /**
+     * Current (or given) month paid vs unpaid roster for staff.
+     *
+     * @return array{
+     *     period: array{year: int, month: int, label: string}|null,
+     *     summary: array{paid: int, unpaid: int, partial: int, no_due: int},
+     *     rows: list<array<string, mixed>>
+     * }
+     */
+    public function currentMonthStatus(?int $year = null, ?int $month = null): array
+    {
+        $year ??= (int) now()->year;
+        $month ??= (int) now()->month;
+
+        $period = DuePeriod::query()
+            ->where('year', $year)
+            ->where('month', $month)
+            ->first();
+
+        $members = User::query()
+            ->where('role', UserRole::Member)
+            ->where('is_active', true)
+            ->orderBy('name')
+            ->get(['id', 'name', 'email', 'member_id']);
+
+        $duesByUser = collect();
+        if ($period !== null) {
+            $duesByUser = MemberDue::query()
+                ->where('due_period_id', $period->id)
+                ->where('status', '!=', MemberDueStatus::Voided)
+                ->get()
+                ->groupBy('user_id');
+        }
+
+        $paid = 0;
+        $unpaid = 0;
+        $partial = 0;
+        $noDue = 0;
+        $rows = [];
+
+        foreach ($members as $member) {
+            $dues = $duesByUser->get($member->id, collect());
+            if ($dues->isEmpty()) {
+                $status = 'no_due';
+                $noDue++;
+                $outstanding = '0.00';
+            } else {
+                $allPaid = $dues->every(fn (MemberDue $d) => $d->status === MemberDueStatus::Paid);
+                $anyPartial = $dues->contains(fn (MemberDue $d) => $d->status === MemberDueStatus::Partial);
+                $anyPending = $dues->contains(fn (MemberDue $d) => $d->status === MemberDueStatus::Pending);
+
+                if ($allPaid) {
+                    $status = 'paid';
+                    $paid++;
+                } elseif ($anyPartial || ($anyPending && $dues->contains(fn (MemberDue $d) => Money::comp((string) $d->amount_allocated, '0') > 0))) {
+                    $status = 'partial';
+                    $partial++;
+                } else {
+                    $status = 'unpaid';
+                    $unpaid++;
+                }
+
+                $outstanding = '0.00';
+                foreach ($dues as $due) {
+                    $outstanding = Money::add(
+                        $outstanding,
+                        Money::sub((string) $due->amount_due, (string) $due->amount_allocated),
+                    );
+                }
+            }
+
+            $rows[] = [
+                'user_id' => $member->id,
+                'member_id' => $member->member_id,
+                'name' => $member->name,
+                'email' => $member->email,
+                'status' => $status,
+                'outstanding' => Money::normalize($outstanding),
+            ];
+        }
+
+        return [
+            'period' => $period === null ? [
+                'year' => $year,
+                'month' => $month,
+                'label' => sprintf('%04d-%02d', $year, $month),
+            ] : [
+                'year' => $period->year,
+                'month' => $period->month,
+                'label' => $period->label,
+            ],
+            'summary' => [
+                'paid' => $paid,
+                'unpaid' => $unpaid,
+                'partial' => $partial,
+                'no_due' => $noDue,
+            ],
+            'rows' => $rows,
+        ];
+    }
 }

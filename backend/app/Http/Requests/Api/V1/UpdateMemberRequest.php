@@ -36,6 +36,7 @@ class UpdateMemberRequest extends FormRequest
         $rules = [
             'phone' => ['nullable', 'string', 'max:32'],
             'address' => ['nullable', 'string', 'max:500'],
+            'occupation' => ['nullable', 'string', 'max:120'],
         ];
 
         if ($isStaffEditor) {

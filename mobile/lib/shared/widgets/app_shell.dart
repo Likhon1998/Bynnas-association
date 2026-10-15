@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../../features/auth/presentation/auth_controller.dart';
@@ -26,7 +25,12 @@ class AppShell extends ConsumerWidget {
     }
     if (path.startsWith('/staff/plans') ||
         path.startsWith('/staff/dues') ||
-        path.startsWith('/staff/notices')) {
+        path.startsWith('/staff/notices') ||
+        path.startsWith('/staff/month-status') ||
+        path.startsWith('/staff/sms') ||
+        path.startsWith('/staff/approvals') ||
+        path.startsWith('/staff/users') ||
+        path.startsWith('/staff/backup')) {
       return true;
     }
     if (path.contains('/record')) {
@@ -40,6 +44,12 @@ class AppShell extends ConsumerWidget {
 
   static int _indexFor(String path, bool staff) {
     if (staff) {
+      if (path.startsWith('/staff/profile') ||
+          path == '/profile' ||
+          path.startsWith('/notices') ||
+          path.startsWith('/notifications')) {
+        return 4;
+      }
       if (path.startsWith('/staff/reports')) {
         return 3;
       }
@@ -93,6 +103,11 @@ class AppShell extends ConsumerWidget {
               selectedIcon: Icon(Icons.assessment_rounded),
               label: 'Reports',
             ),
+            NavigationDestination(
+              icon: Icon(Icons.person_outline_rounded),
+              selectedIcon: Icon(Icons.person_rounded),
+              label: 'Profile',
+            ),
           ]
         : const [
             NavigationDestination(
@@ -118,31 +133,34 @@ class AppShell extends ConsumerWidget {
           ];
 
     final tabPaths = staff
-        ? const ['/', '/staff/members', '/staff/payments', '/staff/reports']
+        ? const [
+            '/',
+            '/staff/members',
+            '/staff/payments',
+            '/staff/reports',
+            '/staff/profile',
+          ]
         : const ['/', '/finance', '/notices', '/profile'];
 
     return Scaffold(
       body: child,
       bottomNavigationBar: hideNav
           ? null
-          : NavigationBarTheme(
-              data: NavigationBarThemeData(
-                indicatorColor: AppColors.accent.withValues(alpha: 0.14),
-                labelTextStyle: WidgetStateProperty.resolveWith((states) {
-                  final selected = states.contains(WidgetState.selected);
-                  return GoogleFonts.plusJakartaSans(
-                    fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
-                    fontSize: 11,
-                    color: selected ? AppColors.navy : AppColors.textMuted,
-                  );
-                }),
-                iconTheme: WidgetStateProperty.resolveWith((states) {
-                  final selected = states.contains(WidgetState.selected);
-                  return IconThemeData(
-                    size: 22,
-                    color: selected ? AppColors.accent : AppColors.textMuted,
-                  );
-                }),
+          : Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                border: Border(
+                  top: BorderSide(
+                    color: AppColors.fieldBorder.withValues(alpha: 0.85),
+                  ),
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.navy.withValues(alpha: 0.04),
+                    blurRadius: 16,
+                    offset: const Offset(0, -4),
+                  ),
+                ],
               ),
               child: NavigationBar(
                 selectedIndex: index.clamp(0, destinations.length - 1),
@@ -152,9 +170,6 @@ class AppShell extends ConsumerWidget {
                   }
                 },
                 destinations: destinations,
-                backgroundColor: Colors.white.withValues(alpha: 0.98),
-                elevation: 0,
-                height: 62,
               ),
             ),
     );

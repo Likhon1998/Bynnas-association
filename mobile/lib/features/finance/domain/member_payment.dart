@@ -7,6 +7,7 @@ class MemberPayment {
     this.method,
     this.receivedAt,
     this.reversalReason,
+    this.recordedByName,
     this.allocations = const [],
     this.currency = 'BDT',
   });
@@ -18,6 +19,7 @@ class MemberPayment {
   final String? method;
   final String? receivedAt;
   final String? reversalReason;
+  final String? recordedByName;
   final List<PaymentAllocationLine> allocations;
   final String currency;
 
@@ -25,6 +27,7 @@ class MemberPayment {
 
   factory MemberPayment.fromJson(Map<String, dynamic> json) {
     final allocationsRaw = json['allocations'];
+    final recorded = json['recorded_by_user'];
     return MemberPayment(
       id: (json['id'] as num).toInt(),
       amount: json['amount']?.toString() ?? '0.00',
@@ -33,6 +36,9 @@ class MemberPayment {
       method: json['method'] as String?,
       receivedAt: json['received_at'] as String?,
       reversalReason: json['reversal_reason'] as String?,
+      recordedByName: recorded is Map
+          ? recorded['name']?.toString()
+          : null,
       currency: json['currency'] as String? ?? 'BDT',
       allocations: allocationsRaw is List
           ? allocationsRaw

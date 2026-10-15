@@ -28,10 +28,16 @@ class MyMemberController extends AsyncNotifier<Member?> {
     String? name,
     String? phone,
     String? address,
+    String? occupation,
   }) async {
     state = const AsyncLoading();
     state = await AsyncValue.guard(
-      () => _api.updateMe(name: name, phone: phone, address: address),
+      () => _api.updateMe(
+            name: name,
+            phone: phone,
+            address: address,
+            occupation: occupation,
+          ),
     );
   }
 }

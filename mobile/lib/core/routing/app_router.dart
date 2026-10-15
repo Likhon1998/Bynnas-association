@@ -15,16 +15,22 @@ import '../../features/members/presentation/member_profile_screen.dart';
 import '../../features/notices/presentation/notice_detail_screen.dart';
 import '../../features/notices/presentation/notices_list_screen.dart';
 import '../../features/notices/presentation/notifications_inbox_screen.dart';
+import '../../features/staff/presentation/staff_approvals_screen.dart';
+import '../../features/staff/presentation/staff_backup_screen.dart';
 import '../../features/staff/presentation/staff_compose_notice_screen.dart';
 import '../../features/staff/presentation/staff_create_member_screen.dart';
 import '../../features/staff/presentation/staff_edit_member_screen.dart';
 import '../../features/staff/presentation/staff_generate_dues_screen.dart';
 import '../../features/staff/presentation/staff_member_detail_screen.dart';
 import '../../features/staff/presentation/staff_members_screen.dart';
+import '../../features/staff/presentation/staff_month_status_screen.dart';
 import '../../features/staff/presentation/staff_payments_screen.dart';
 import '../../features/staff/presentation/staff_plans_screen.dart';
+import '../../features/staff/presentation/staff_profile_screen.dart';
 import '../../features/staff/presentation/staff_record_payment_screen.dart';
 import '../../features/staff/presentation/staff_reports_screen.dart';
+import '../../features/staff/presentation/staff_sms_screen.dart';
+import '../../features/staff/presentation/staff_users_screen.dart';
 import '../../shared/widgets/app_shell.dart';
 import '../theme/app_colors.dart';
 
@@ -194,6 +200,36 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             path: '/staff/reports',
             name: 'staff-reports',
             builder: (context, state) => const StaffReportsScreen(),
+          ),
+          GoRoute(
+            path: '/staff/profile',
+            name: 'staff-profile',
+            builder: (context, state) => const StaffProfileScreen(),
+          ),
+          GoRoute(
+            path: '/staff/month-status',
+            name: 'staff-month-status',
+            builder: (context, state) => const StaffMonthStatusScreen(),
+          ),
+          GoRoute(
+            path: '/staff/sms',
+            name: 'staff-sms',
+            builder: (context, state) => const StaffSmsScreen(),
+          ),
+          GoRoute(
+            path: '/staff/approvals',
+            name: 'staff-approvals',
+            builder: (context, state) => const StaffApprovalsScreen(),
+          ),
+          GoRoute(
+            path: '/staff/users',
+            name: 'staff-users',
+            builder: (context, state) => const StaffUsersScreen(),
+          ),
+          GoRoute(
+            path: '/staff/backup',
+            name: 'staff-backup',
+            builder: (context, state) => const StaffBackupScreen(),
           ),
         ],
       ),

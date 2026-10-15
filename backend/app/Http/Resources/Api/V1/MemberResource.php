@@ -26,6 +26,10 @@ class MemberResource extends JsonResource
             'deactivated_at' => $this->deactivated_at?->toIso8601String(),
             'phone' => $this->memberProfile?->phone,
             'address' => $this->memberProfile?->address,
+            'occupation' => $this->memberProfile?->occupation,
+            'photo_url' => $this->memberProfile?->photo_path
+                ? url('storage/'.$this->memberProfile->photo_path)
+                : null,
             'notes' => $this->when($isStaff, $this->memberProfile?->notes),
             'joined_on' => $this->memberProfile?->joined_on?->toDateString(),
             'email_verified_at' => $this->email_verified_at?->toIso8601String(),

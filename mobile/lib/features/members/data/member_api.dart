@@ -24,6 +24,7 @@ class MemberApi {
     String? name,
     String? phone,
     String? address,
+    String? occupation,
   }) async {
     try {
       final me = await this.me();
@@ -33,6 +34,7 @@ class MemberApi {
           'name': ?name,
           'phone': ?phone,
           'address': ?address,
+          'occupation': ?occupation,
         },
       );
       final payload = response.data ?? {};

@@ -4,7 +4,9 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../core/theme/app_colors.dart';
+import '../../../shared/widgets/app_feedback.dart';
 import '../../../shared/widgets/app_format.dart';
+import '../../../shared/widgets/app_motion.dart';
 import '../../../shared/widgets/brand_atmosphere.dart';
 import '../../../shared/widgets/screen_back_button.dart';
 import '../../../shared/widgets/section_card.dart';
@@ -34,87 +36,118 @@ class FinanceDashboardScreen extends ConsumerWidget {
               ),
               Expanded(
                 child: RefreshIndicator(
-                  color: AppColors.accent,
+                  color: AppColors.magenta,
                   onRefresh: () async {
                     await ref.read(financeBalanceProvider.notifier).refresh();
                     await ref.read(financeDuesProvider.notifier).refresh();
                   },
                   child: ListView(
-                    padding: const EdgeInsets.fromLTRB(20, 4, 20, 24),
+                    padding: const EdgeInsets.fromLTRB(18, 4, 18, 28),
                     children: [
                       balance.when(
                         loading: () => const Padding(
                           padding: EdgeInsets.all(32),
                           child: Center(
                             child: CircularProgressIndicator(
-                              color: AppColors.accent,
+                              color: AppColors.magenta,
                             ),
                           ),
                         ),
-                        error: (error, _) => _FinanceMessage(
+                        error: (error, _) => AppEmptyCard(
+                          icon: Icons.error_outline_rounded,
                           title: 'Could not load balance',
                           detail: AppFormat.friendlyError(error),
-                          onRetry: () => ref
-                              .read(financeBalanceProvider.notifier)
-                              .refresh(),
                         ),
-                        data: (data) => Column(
-                          children: [
-                            Row(
+                        data: (data) => FadeRise(
+                          child: SectionCard(
+                            padding:
+                                const EdgeInsets.fromLTRB(18, 18, 18, 16),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Expanded(
-                                  child: MetricTile(
-                                    label: 'Outstanding',
-                                    value: AppFormat.money(data.outstanding),
-                                    emphasis: true,
+                                Text(
+                                  'Outstanding',
+                                  style: GoogleFonts.plusJakartaSans(
+                                    color: AppColors.textMuted,
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: 12.5,
                                   ),
                                 ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: MetricTile(
-                                    label: 'Total paid',
-                                    value:
-                                        AppFormat.money(data.totalAllocated),
+                                const SizedBox(height: 6),
+                                Text(
+                                  AppFormat.money(data.outstanding),
+                                  style: GoogleFonts.plusJakartaSans(
+                                    color: AppColors.magenta,
+                                    fontWeight: FontWeight.w800,
+                                    fontSize: 30,
+                                    letterSpacing: -0.8,
+                                    height: 1.05,
                                   ),
+                                ),
+                                const SizedBox(height: 14),
+                                Container(
+                                  height: 1,
+                                  color: AppColors.fieldBorder
+                                      .withValues(alpha: 0.85),
+                                ),
+                                const SizedBox(height: 12),
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: _Stat(
+                                        label: 'Paid',
+                                        value: AppFormat.money(
+                                          data.totalAllocated,
+                                        ),
+                                      ),
+                                    ),
+                                    Expanded(
+                                      child: _Stat(
+                                        label: 'Expected',
+                                        value: AppFormat.money(data.totalDue),
+                                        alignEnd: true,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ],
                             ),
-                            const SizedBox(height: 12),
-                            MetricTile(
-                              label: 'Expected contributions',
-                              value: AppFormat.money(data.totalDue),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 14),
+                      FadeRise(
+                        delay: const Duration(milliseconds: 50),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: AppActionTile(
+                                icon: Icons.receipt_long_rounded,
+                                title: 'Payments',
+                                subtitle: 'Receipt history',
+                                tint: AppColors.magenta,
+                                onTap: () =>
+                                    context.push('/finance/payments'),
+                              ),
                             ),
                           ],
                         ),
                       ),
-                      const SizedBox(height: 18),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: _NavTile(
-                              label: 'Payments',
-                              icon: Icons.receipt_long_outlined,
-                              onTap: () => context.push('/finance/payments'),
-                            ),
-                          ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: _NavTile(
-                              label: 'Statement',
-                              icon: Icons.description_outlined,
-                              onTap: () => context.push('/finance/statement'),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 24),
-                      Text(
-                        'Monthly contribution status',
-                        style: GoogleFonts.plusJakartaSans(
-                          color: AppColors.navy,
-                          fontWeight: FontWeight.w800,
-                          fontSize: 16,
+                      const SizedBox(height: 10),
+                      FadeRise(
+                        delay: const Duration(milliseconds: 80),
+                        child: AppActionTile(
+                          icon: Icons.description_rounded,
+                          title: 'Statement',
+                          subtitle: 'Period summary',
+                          tint: AppColors.navy,
+                          onTap: () => context.push('/finance/statement'),
                         ),
+                      ),
+                      const SizedBox(height: 20),
+                      FadeRise(
+                        delay: const Duration(milliseconds: 100),
+                        child: const SectionLabel('Monthly dues'),
                       ),
                       const SizedBox(height: 10),
                       dues.when(
@@ -122,36 +155,40 @@ class FinanceDashboardScreen extends ConsumerWidget {
                           padding: EdgeInsets.all(24),
                           child: Center(
                             child: CircularProgressIndicator(
-                              color: AppColors.accent,
+                              color: AppColors.magenta,
                             ),
                           ),
                         ),
-                        error: (error, _) => _FinanceMessage(
+                        error: (error, _) => AppEmptyCard(
+                          icon: Icons.error_outline_rounded,
                           title: 'Could not load dues',
                           detail: AppFormat.friendlyError(error),
-                          onRetry: () =>
-                              ref.read(financeDuesProvider.notifier).refresh(),
                         ),
                         data: (items) {
                           if (items.isEmpty) {
-                            return _FinanceMessage(
+                            return const AppEmptyCard(
+                              icon: Icons.calendar_month_outlined,
                               title: 'No dues yet',
                               detail:
                                   'Monthly contribution lines will appear here.',
-                              onRetry: () => ref
-                                  .read(financeDuesProvider.notifier)
-                                  .refresh(),
                             );
                           }
                           return Column(
-                            children: items
-                                .map(
-                                  (due) => Padding(
-                                    padding: const EdgeInsets.only(bottom: 10),
+                            children: [
+                              for (var i = 0; i < items.length; i++)
+                                FadeRise(
+                                  delay: Duration(
+                                    milliseconds:
+                                        110 + (i.clamp(0, 8) * 28),
+                                  ),
+                                  child: Padding(
+                                    padding: const EdgeInsets.only(bottom: 9),
                                     child: SectionCard(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 14,
-                                        vertical: 12,
+                                      padding: const EdgeInsets.fromLTRB(
+                                        14,
+                                        12,
+                                        12,
+                                        12,
                                       ),
                                       child: Row(
                                         children: [
@@ -161,32 +198,34 @@ class FinanceDashboardScreen extends ConsumerWidget {
                                                   CrossAxisAlignment.start,
                                               children: [
                                                 Text(
-                                                  due.periodLabel ?? 'Period',
+                                                  items[i].periodLabel ??
+                                                      'Period',
                                                   style: GoogleFonts
                                                       .plusJakartaSans(
-                                                    fontWeight: FontWeight.w700,
+                                                    fontWeight: FontWeight.w800,
                                                     color: AppColors.navy,
+                                                    fontSize: 14,
                                                   ),
                                                 ),
-                                                const SizedBox(height: 4),
+                                                const SizedBox(height: 3),
                                                 Text(
-                                                  'Due ${AppFormat.money(due.amountDue)} · Out ${AppFormat.money(due.outstanding)}',
+                                                  'Due ${AppFormat.money(items[i].amountDue)} · Out ${AppFormat.money(items[i].outstanding)}',
                                                   style: GoogleFonts
                                                       .plusJakartaSans(
                                                     color: AppColors.textMuted,
-                                                    fontSize: 13,
+                                                    fontSize: 12.5,
                                                   ),
                                                 ),
                                               ],
                                             ),
                                           ),
-                                          StatusChip(due.status),
+                                          StatusChip(items[i].status),
                                         ],
                                       ),
                                     ),
                                   ),
-                                )
-                                .toList(),
+                                ),
+                            ],
                           );
                         },
                       ),
@@ -202,81 +241,41 @@ class FinanceDashboardScreen extends ConsumerWidget {
   }
 }
 
-class _NavTile extends StatelessWidget {
-  const _NavTile({
+class _Stat extends StatelessWidget {
+  const _Stat({
     required this.label,
-    required this.icon,
-    required this.onTap,
+    required this.value,
+    this.alignEnd = false,
   });
 
   final String label;
-  final IconData icon;
-  final VoidCallback onTap;
+  final String value;
+  final bool alignEnd;
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: AppColors.navy,
-      borderRadius: BorderRadius.circular(14),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(14),
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 12),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(icon, color: Colors.white, size: 18),
-              const SizedBox(width: 8),
-              Text(
-                label,
-                style: GoogleFonts.plusJakartaSans(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ],
+    return Column(
+      crossAxisAlignment:
+          alignEnd ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: GoogleFonts.plusJakartaSans(
+            color: AppColors.textMuted,
+            fontWeight: FontWeight.w600,
+            fontSize: 12,
           ),
         ),
-      ),
-    );
-  }
-}
-
-class _FinanceMessage extends StatelessWidget {
-  const _FinanceMessage({
-    required this.title,
-    required this.detail,
-    required this.onRetry,
-  });
-
-  final String title;
-  final String detail;
-  final VoidCallback onRetry;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 24),
-      child: Column(
-        children: [
-          Text(
-            title,
-            style: GoogleFonts.plusJakartaSans(
-              color: AppColors.navy,
-              fontWeight: FontWeight.w800,
-            ),
+        const SizedBox(height: 3),
+        Text(
+          value,
+          style: GoogleFonts.plusJakartaSans(
+            color: AppColors.navy,
+            fontWeight: FontWeight.w800,
+            fontSize: 14,
           ),
-          const SizedBox(height: 8),
-          Text(
-            detail,
-            textAlign: TextAlign.center,
-            style: GoogleFonts.plusJakartaSans(color: AppColors.textMuted),
-          ),
-          const SizedBox(height: 12),
-          TextButton(onPressed: onRetry, child: const Text('Retry')),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }

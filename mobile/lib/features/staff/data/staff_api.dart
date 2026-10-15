@@ -37,7 +37,7 @@ class StaffApi {
         '/members',
         queryParameters: {
           'page': page,
-          'per_page': 30,
+          'per_page': 100,
           if (search != null && search.isNotEmpty) 'search': search,
           if (status != null && status.isNotEmpty) 'status': status,
         },
@@ -71,6 +71,7 @@ class StaffApi {
     String? passwordConfirmation,
     String? phone,
     String? address,
+    String? occupation,
     String? notes,
     String? joinedOn,
   }) async {
@@ -86,6 +87,7 @@ class StaffApi {
           },
           if (phone != null && phone.isNotEmpty) 'phone': phone,
           if (address != null && address.isNotEmpty) 'address': address,
+          if (occupation != null && occupation.isNotEmpty) 'occupation': occupation,
           if (notes != null && notes.isNotEmpty) 'notes': notes,
           if (joinedOn != null && joinedOn.isNotEmpty) 'joined_on': joinedOn,
         },
@@ -107,6 +109,7 @@ class StaffApi {
     String? email,
     String? phone,
     String? address,
+    String? occupation,
     String? notes,
     String? joinedOn,
     String? password,
@@ -120,6 +123,7 @@ class StaffApi {
           if (email != null) 'email': email,
           if (phone != null) 'phone': phone,
           if (address != null) 'address': address,
+          if (occupation != null) 'occupation': occupation,
           if (notes != null) 'notes': notes,
           if (joinedOn != null) 'joined_on': joinedOn,
           if (password != null && password.isNotEmpty) ...{
@@ -372,6 +376,7 @@ class StaffApi {
     required String title,
     required String body,
     String audienceType = 'all_active_members',
+    List<int>? memberIds,
   }) async {
     try {
       final response = await _client.post<Map<String, dynamic>>(
@@ -380,6 +385,7 @@ class StaffApi {
           'title': title,
           'body': body,
           'audience_type': audienceType,
+          if (memberIds != null && memberIds.isNotEmpty) 'member_ids': memberIds,
         },
       );
       final payload = response.data ?? {};
@@ -397,6 +403,224 @@ class StaffApi {
       final payload = response.data ?? {};
       final data = payload['data'] as Map<String, dynamic>? ?? payload;
       return Notice.fromJson(data);
+    } on DioException catch (error) {
+      throw _toAppException(error);
+    }
+  }
+
+  Future<Map<String, dynamic>> currentMonthStatus({int? year, int? month}) async {
+    try {
+      final response = await _client.get<Map<String, dynamic>>(
+        '/reports/current-month-status',
+        queryParameters: {
+          if (year != null) 'year': year,
+          if (month != null) 'month': month,
+        },
+      );
+      final payload = response.data ?? {};
+      return payload['data'] as Map<String, dynamic>? ?? payload;
+    } on DioException catch (error) {
+      throw _toAppException(error);
+    }
+  }
+
+  Future<List<int>> downloadReportPdf({required bool memberWise}) async {
+    try {
+      final path = memberWise
+          ? '/reports/member-wise/pdf'
+          : '/reports/month-wise/pdf';
+      final response = await _client.raw.get<List<int>>(
+        path,
+        options: Options(
+          responseType: ResponseType.bytes,
+          headers: {'Accept': 'application/pdf'},
+        ),
+      );
+      return response.data ?? const [];
+    } on DioException catch (error) {
+      throw _toAppException(error);
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> memberPayments(int userId) async {
+    try {
+      final response = await _client.get<Map<String, dynamic>>(
+        '/payments',
+        queryParameters: {'user_id': userId, 'per_page': 50},
+      );
+      final data = response.data?['data'];
+      if (data is! List) {
+        return const [];
+      }
+      return data.whereType<Map<String, dynamic>>().toList();
+    } on DioException catch (error) {
+      throw _toAppException(error);
+    }
+  }
+
+  Future<Member> uploadMemberPhoto(
+    int memberId, {
+    String? filePath,
+    List<int>? bytes,
+    String filename = 'photo.jpg',
+  }) async {
+    try {
+      final MultipartFile photo;
+      if (bytes != null) {
+        photo = MultipartFile.fromBytes(bytes, filename: filename);
+      } else if (filePath != null && filePath.isNotEmpty) {
+        photo = await MultipartFile.fromFile(filePath, filename: filename);
+      } else {
+        throw AppException('No photo selected.');
+      }
+      final form = FormData.fromMap({'photo': photo});
+      final response = await _client.raw.post<Map<String, dynamic>>(
+        '/members/$memberId/photo',
+        data: form,
+        options: Options(contentType: 'multipart/form-data'),
+      );
+      final payload = response.data ?? {};
+      final data = payload['data'] as Map<String, dynamic>? ?? payload;
+      return Member.fromJson(data);
+    } on DioException catch (error) {
+      throw _toAppException(error);
+    }
+  }
+
+  Future<Map<String, dynamic>> sendSms({
+    required String body,
+    String audienceType = 'all_active_members',
+    List<int>? memberIds,
+  }) async {
+    try {
+      final response = await _client.post<Map<String, dynamic>>(
+        '/sms',
+        data: {
+          'body': body,
+          'audience_type': audienceType,
+          if (memberIds != null && memberIds.isNotEmpty) 'member_ids': memberIds,
+        },
+      );
+      return response.data ?? {};
+    } on DioException catch (error) {
+      throw _toAppException(error);
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> listSms() async {
+    try {
+      final response = await _client.get<Map<String, dynamic>>('/sms');
+      final data = response.data?['data'];
+      if (data is! List) {
+        return const [];
+      }
+      return data.whereType<Map<String, dynamic>>().toList();
+    } on DioException catch (error) {
+      throw _toAppException(error);
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> listApprovals({String? status}) async {
+    try {
+      final response = await _client.get<Map<String, dynamic>>(
+        '/financial-approvals',
+        queryParameters: {
+          if (status != null) 'status': status,
+        },
+      );
+      final data = response.data?['data'];
+      if (data is! List) {
+        return const [];
+      }
+      return data.whereType<Map<String, dynamic>>().toList();
+    } on DioException catch (error) {
+      throw _toAppException(error);
+    }
+  }
+
+  Future<Map<String, dynamic>> requestReverse({
+    required int paymentId,
+    required String reason,
+  }) async {
+    try {
+      final response = await _client.post<Map<String, dynamic>>(
+        '/payments/$paymentId/reverse-request',
+        data: {'reason': reason},
+      );
+      return response.data ?? {};
+    } on DioException catch (error) {
+      throw _toAppException(error);
+    }
+  }
+
+  Future<void> approveChange(int id, {String? note}) async {
+    try {
+      await _client.post<Map<String, dynamic>>(
+        '/financial-approvals/$id/approve',
+        data: {if (note != null && note.isNotEmpty) 'note': note},
+      );
+    } on DioException catch (error) {
+      throw _toAppException(error);
+    }
+  }
+
+  Future<void> rejectChange(int id, {String? note}) async {
+    try {
+      await _client.post<Map<String, dynamic>>(
+        '/financial-approvals/$id/reject',
+        data: {if (note != null && note.isNotEmpty) 'note': note},
+      );
+    } on DioException catch (error) {
+      throw _toAppException(error);
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> listStaffUsers() async {
+    try {
+      final response = await _client.get<Map<String, dynamic>>('/staff-users');
+      final data = response.data?['data'];
+      if (data is! List) {
+        return const [];
+      }
+      return data.whereType<Map<String, dynamic>>().toList();
+    } on DioException catch (error) {
+      throw _toAppException(error);
+    }
+  }
+
+  Future<({Map<String, dynamic> user, String? temporaryPassword})> createStaffUser({
+    required String name,
+    required String email,
+    required String role,
+    String? password,
+  }) async {
+    try {
+      final response = await _client.post<Map<String, dynamic>>(
+        '/staff-users',
+        data: {
+          'name': name,
+          'email': email,
+          'role': role,
+          if (password != null && password.isNotEmpty) ...{
+            'password': password,
+            'password_confirmation': password,
+          },
+        },
+      );
+      final payload = response.data ?? {};
+      return (
+        user: payload['data'] as Map<String, dynamic>? ?? {},
+        temporaryPassword: payload['temporary_password'] as String?,
+      );
+    } on DioException catch (error) {
+      throw _toAppException(error);
+    }
+  }
+
+  Future<Map<String, dynamic>> createBackup() async {
+    try {
+      final response = await _client.post<Map<String, dynamic>>('/backups');
+      return response.data ?? {};
     } on DioException catch (error) {
       throw _toAppException(error);
     }

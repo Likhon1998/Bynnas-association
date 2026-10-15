@@ -22,6 +22,7 @@ class MemberService
      *     password?: string|null,
      *     phone?: string|null,
      *     address?: string|null,
+     *     occupation?: string|null,
      *     notes?: string|null,
      *     joined_on?: string|null,
      * }  $data
@@ -45,6 +46,7 @@ class MemberService
             $member->memberProfile()->create([
                 'phone' => $data['phone'] ?? null,
                 'address' => $data['address'] ?? null,
+                'occupation' => $data['occupation'] ?? null,
                 'notes' => $data['notes'] ?? null,
                 'joined_on' => $data['joined_on'] ?? now()->toDateString(),
             ]);
@@ -64,6 +66,8 @@ class MemberService
      *     email?: string,
      *     phone?: string|null,
      *     address?: string|null,
+     *     occupation?: string|null,
+     *     photo_path?: string|null,
      *     notes?: string|null,
      *     joined_on?: string|null,
      *     password?: string|null,
@@ -90,6 +94,8 @@ class MemberService
             $profile->fill([
                 'phone' => array_key_exists('phone', $data) ? $data['phone'] : $profile->phone,
                 'address' => array_key_exists('address', $data) ? $data['address'] : $profile->address,
+                'occupation' => array_key_exists('occupation', $data) ? $data['occupation'] : $profile->occupation,
+                'photo_path' => array_key_exists('photo_path', $data) ? $data['photo_path'] : $profile->photo_path,
                 'notes' => array_key_exists('notes', $data) ? $data['notes'] : $profile->notes,
                 'joined_on' => array_key_exists('joined_on', $data) ? $data['joined_on'] : $profile->joined_on,
             ])->save();

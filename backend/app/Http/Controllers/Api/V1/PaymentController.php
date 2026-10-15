@@ -71,7 +71,7 @@ class PaymentController extends Controller
     {
         /** @var User $actor */
         $actor = $request->user();
-        $payment->loadMissing(['allocations.memberDue.period', 'member']);
+        $payment->loadMissing(['allocations.memberDue.period', 'member', 'recordedBy']);
 
         abort_unless($this->policy->viewMemberFinancial($actor, $payment->member), 403);
 

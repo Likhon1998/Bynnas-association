@@ -17,6 +17,8 @@ class MemberProfile extends Model
         'user_id',
         'phone',
         'address',
+        'occupation',
+        'photo_path',
         'notes',
         'joined_on',
     ];

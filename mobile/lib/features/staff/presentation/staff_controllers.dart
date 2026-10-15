@@ -31,20 +31,37 @@ final staffMembersProvider =
 
 class StaffMembersNotifier extends AsyncNotifier<List<Member>> {
   String? _search;
+  String? _status;
 
   @override
-  Future<List<Member>> build() =>
-      ref.read(staffApiProvider).listMembers(search: _search);
+  Future<List<Member>> build() => ref.read(staffApiProvider).listMembers(
+        search: _search,
+        status: _status,
+      );
 
-  Future<void> search(String? query) async {
+  Future<void> search(String? query, {String? status, bool silent = false}) async {
     _search = query;
-    state = const AsyncLoading();
+    if (status != null) {
+      _status = status.isEmpty ? null : status;
+    }
+    if (!silent) {
+      state = const AsyncLoading();
+    }
     state = await AsyncValue.guard(
-      () => ref.read(staffApiProvider).listMembers(search: _search),
+      () => ref.read(staffApiProvider).listMembers(
+            search: _search,
+            status: _status,
+          ),
     );
   }
 
-  Future<void> refresh() => search(_search);
+  Future<void> setStatus(String? status) => search(
+        _search,
+        status: status ?? '',
+        silent: true,
+      );
+
+  Future<void> refresh() => search(_search, status: _status, silent: true);
 }
 
 final staffPaymentsProvider =

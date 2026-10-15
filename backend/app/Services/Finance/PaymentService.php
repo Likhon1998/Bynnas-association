@@ -212,7 +212,7 @@ class PaymentService
     public function paginateForMember(User $member, int $perPage = 15): LengthAwarePaginator
     {
         return Payment::query()
-            ->with(['allocations.memberDue.period'])
+            ->with(['allocations.memberDue.period', 'recordedBy'])
             ->where('user_id', $member->id)
             ->latest('received_at')
             ->paginate($perPage)

@@ -23,6 +23,11 @@ class PaymentResource extends JsonResource
             'method' => $this->method?->value,
             'received_at' => $this->received_at?->toIso8601String(),
             'recorded_by' => $this->recorded_by,
+            'recorded_by_user' => $this->whenLoaded('recordedBy', fn () => [
+                'id' => $this->recordedBy?->id,
+                'name' => $this->recordedBy?->name,
+                'email' => $this->recordedBy?->email,
+            ]),
             'status' => $this->status?->value,
             'receipt_number' => $this->receipt_number,
             'idempotency_key' => $this->idempotency_key,

@@ -3,11 +3,13 @@
 namespace App\Providers;
 
 use App\Contracts\PushNotificationSender;
+use App\Contracts\SmsGateway;
 use App\Enums\UserRole;
 use App\Models\User;
 use App\Policies\UserPolicy;
 use App\Services\Notifications\FcmPushNotificationSender;
 use App\Services\Notifications\NullPushNotificationSender;
+use App\Services\Sms\LogSmsGateway;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -27,6 +29,8 @@ class AppServiceProvider extends ServiceProvider
 
             return $fcm->isConfigured() ? $fcm : new NullPushNotificationSender;
         });
+
+        $this->app->singleton(SmsGateway::class, LogSmsGateway::class);
     }
 
     /**

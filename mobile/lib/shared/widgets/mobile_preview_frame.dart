@@ -30,23 +30,52 @@ class MobilePreviewFrame extends StatelessWidget {
       return child;
     }
 
-    return ColoredBox(
-      color: const Color(0xFF1A2030),
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          return Column(
+    return DecoratedBox(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Color(0xFF0B1224),
+            Color(0xFF1A1030),
+            Color(0xFF0E1A36),
+          ],
+        ),
+      ),
+      child: Stack(
+        children: [
+          Positioned(
+            top: -80,
+            left: -40,
+            child: _Glow(color: AppColors.magenta.withValues(alpha: 0.22)),
+          ),
+          Positioned(
+            bottom: -60,
+            right: -30,
+            child: _Glow(color: AppColors.blue.withValues(alpha: 0.22)),
+          ),
+          Column(
             children: [
-              const SizedBox(height: 16),
+              const SizedBox(height: 18),
               Text(
                 'Bynnas Association',
                 style: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.72),
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  letterSpacing: 0.6,
+                  color: Colors.white.withValues(alpha: 0.78),
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 0.8,
                 ),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 4),
+              Text(
+                'Mobile preview',
+                style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.38),
+                  fontSize: 11,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              const SizedBox(height: 14),
               Expanded(
                 child: Center(
                   child: FittedBox(
@@ -55,10 +84,30 @@ class MobilePreviewFrame extends StatelessWidget {
                   ),
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 18),
             ],
-          );
-        },
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _Glow extends StatelessWidget {
+  const _Glow({required this.color});
+
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return IgnorePointer(
+      child: Container(
+        width: 280,
+        height: 280,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          gradient: RadialGradient(colors: [color, color.withValues(alpha: 0)]),
+        ),
       ),
     );
   }
@@ -74,73 +123,41 @@ class _PhoneShell extends StatelessWidget {
     final hostMedia = MediaQuery.of(context);
 
     return Container(
-      width: MobilePreviewFrame.phoneSize.width + 18,
-      height: MobilePreviewFrame.phoneSize.height + 18,
-      padding: const EdgeInsets.all(9),
+      width: MobilePreviewFrame.phoneSize.width + 20,
+      height: MobilePreviewFrame.phoneSize.height + 20,
+      padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-        color: const Color(0xFF111513),
-        borderRadius: BorderRadius.circular(40),
-        border: Border.all(color: const Color(0xFF3D4540), width: 2),
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFF2A3142), Color(0xFF141820)],
+        ),
+        borderRadius: BorderRadius.circular(42),
+        border: Border.all(color: const Color(0xFF4A5368), width: 1.5),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.35),
-            blurRadius: 40,
-            offset: const Offset(0, 18),
+            color: Colors.black.withValues(alpha: 0.45),
+            blurRadius: 48,
+            offset: const Offset(0, 22),
           ),
         ],
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(30),
+        borderRadius: BorderRadius.circular(32),
         child: SizedBox(
           width: MobilePreviewFrame.phoneSize.width,
           height: MobilePreviewFrame.phoneSize.height,
           child: MediaQuery(
             data: hostMedia.copyWith(
               size: MobilePreviewFrame.phoneSize,
-              padding: const EdgeInsets.fromLTRB(0, 36, 0, 18),
-              viewPadding: const EdgeInsets.fromLTRB(0, 36, 0, 18),
+              padding: EdgeInsets.zero,
+              viewPadding: EdgeInsets.zero,
               viewInsets: EdgeInsets.zero,
               devicePixelRatio: hostMedia.devicePixelRatio,
             ),
-            child: Stack(
-              fit: StackFit.expand,
-              children: [
-                child,
-                Positioned(
-                  top: 8,
-                  left: 0,
-                  right: 0,
-                  child: IgnorePointer(
-                    child: Center(
-                      child: Container(
-                        width: 118,
-                        height: 28,
-                        decoration: BoxDecoration(
-                          color: AppColors.ink.withValues(alpha: 0.85),
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                Positioned(
-                  bottom: 8,
-                  left: 0,
-                  right: 0,
-                  child: IgnorePointer(
-                    child: Center(
-                      child: Container(
-                        width: 120,
-                        height: 4,
-                        decoration: BoxDecoration(
-                          color: AppColors.ink.withValues(alpha: 0.35),
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
+            child: ColoredBox(
+              color: AppColors.page,
+              child: child,
             ),
           ),
         ),

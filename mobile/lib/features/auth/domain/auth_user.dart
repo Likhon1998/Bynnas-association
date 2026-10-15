@@ -20,6 +20,29 @@ class AuthUser {
   bool get isStaff =>
       role == 'admin' || role == 'super_admin' || role == 'accountant';
 
+  bool get isSuperAdmin => role == 'super_admin';
+
+  bool get isAdmin => role == 'admin' || role == 'super_admin';
+
+  bool get isAccountant => role == 'accountant';
+
+  /// Add / edit / deactivate members, compose notices, SMS.
+  bool get canManageMembers => isAdmin;
+
+  bool get canManageNotices => isAdmin;
+
+  bool get canSendSms => isAdmin;
+
+  bool get canManageStaff => isSuperAdmin;
+
+  bool get canRunBackups => isSuperAdmin;
+
+  bool get canApproveFinance => isAdmin;
+
+  bool get canRecordPayments => isStaff;
+
+  bool get canViewReports => isStaff;
+
   factory AuthUser.fromJson(Map<String, dynamic> json) {
     return AuthUser(
       id: json['id'] as int,
